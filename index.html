@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin MyConnect</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Panel de Clientes MyConnect</h1>
+        <div id="user-list">
+            <p>Cargando clientes de la base de datos...</p>
+        </div>
+    </div>
+    <div id="login-section" class="container">
+    <h2>Acceso Administrativo</h2>
+    <input type="email" id="adminEmail" placeholder="Correo">
+    <input type="password" id="adminPass" placeholder="Contraseña">
+    <button onclick="login()" class="save-btn">Entrar al Panel</button>
+</div>
+
+<div id="admin-content" style="display:none;">
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>Editar Enlaces m3u</h3>
+            <input type="hidden" id="editId">
+            <label>Nombre:</label>
+            <input type="text" id="editName">
+            <label>URL TV:</label>
+            <input type="text" id="editTv">
+            <label>URL Películas:</label>
+            <input type="text" id="editMovie">
+            <label>URL Series:</label>
+            <input type="text" id="editSerie">
+            <div class="buttons">
+                <button onclick="saveChanges()" class="save-btn">Guardar Cambios</button>
+                <button onclick="closeModal()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
