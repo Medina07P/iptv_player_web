@@ -1,46 +1,565 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Admin MyConnect</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MYCONNECT · Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Panel de Clientes MyConnect</h1>
-        <div id="user-list">
-            <p>Cargando clientes de la base de datos...</p>
-        </div>
+
+<!-- ═══════════════════════════════════════ LOGIN ════════════════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="brand">MYCONNECT</div>
+      <div class="sub">PANEL DE ADMINISTRACIÓN</div>
     </div>
-    <div id="login-section" class="container">
-    <h2>Acceso Administrativo</h2>
-    <input type="email" id="adminEmail" placeholder="Correo">
-    <input type="password" id="adminPass" placeholder="Contraseña">
-    <button onclick="login()" class="save-btn">Entrar al Panel</button>
+    <div class="field-group">
+      <label>CORREO ADMINISTRATIVO</label>
+      <input type="email" id="adminEmail" placeholder="admin@correo.com" autocomplete="username">
+    </div>
+    <div class="field-group">
+      <label>CONTRASEÑA</label>
+      <input type="password" id="adminPass" placeholder="••••••••"
+             autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') login()">
+    </div>
+    <button class="btn btn-primary btn-full" onclick="login()" id="loginBtn">
+      Acceder al Panel
+    </button>
+  </div>
 </div>
 
-<div id="admin-content" style="display:none;">
+<!-- ═══════════════════════════════════════ DASHBOARD ════════════ -->
+<div id="dashboard">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="dot"></div>
+      <span>MYCONNECT</span>
+    </div>
+    <div class="topbar-right">
+      <div class="admin-badge">
+        <div class="av">A</div>
+        <span id="adminEmailLabel">Admin</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="logout()">Salir</button>
+    </div>
+  </header>
+
+  <div class="main">
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card green">
+        <div class="stat-label">ACTIVOS</div>
+        <div class="stat-value" id="stat-active">—</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-label">PENDIENTES</div>
+        <div class="stat-value" id="stat-pending">—</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">VENCIDOS</div>
+        <div class="stat-value" id="stat-expired">—</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-label">TOTAL CLIENTES</div>
+        <div class="stat-value" id="stat-total">—</div>
+      </div>
     </div>
 
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <h3>Editar Enlaces m3u</h3>
-            <input type="hidden" id="editId">
-            <label>Nombre:</label>
-            <input type="text" id="editName">
-            <label>URL TV:</label>
-            <input type="text" id="editTv">
-            <label>URL Películas:</label>
-            <input type="text" id="editMovie">
-            <label>URL Series:</label>
-            <input type="text" id="editSerie">
-            <div class="buttons">
-                <button onclick="saveChanges()" class="save-btn">Guardar Cambios</button>
-                <button onclick="closeModal()">Cancelar</button>
-            </div>
+    <!-- Tabs -->
+    <div class="dash-tabs">
+      <button class="dash-tab active" onclick="switchTab('clientes', this)">CLIENTES</button>
+      <button class="dash-tab"        onclick="switchTab('listas', this)">LISTAS M3U</button>
+    </div>
+
+    <!-- ── PANEL CLIENTES ───────────────────────────────────────── -->
+    <div id="panel-clientes" class="dash-panel active">
+      <div class="toolbar">
+        <h2>CLIENTES</h2>
+        <div class="toolbar-actions">
+          <div class="search-wrap">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/>
+              <path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input type="text" id="searchInput" placeholder="Buscar cliente..."
+                   oninput="filtrarTabla()">
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="recargar()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+              <path d="M21 3v5h-5"/>
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+              <path d="M3 21v-5h5"/>
+            </svg>
+            Actualizar
+          </button>
+          <button class="btn btn-success btn-sm" onclick="abrirCreacion()">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            Nuevo Cliente
+          </button>
         </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>CLIENTE</th>
+              <th>ESTADO</th>
+              <th>PLAN</th>
+              <th>VENCIMIENTO</th>
+              <th>SESIÓN</th>
+              <th>CONEXIONES</th>
+              <th>ACCIONES</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody">
+            <tr class="empty-row">
+              <td colspan="7"><span class="loader"></span> Cargando...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div><!-- /panel-clientes -->
+
+    <!-- ── PANEL LISTAS M3U ─────────────────────────────────────── -->
+    <div id="panel-listas" class="dash-panel">
+      <div class="toolbar">
+        <h2>LISTAS M3U</h2>
+        <p style="font-size:12px;color:var(--muted);margin-top:4px">
+          Guarda las URLs aquí para seleccionarlas al crear o editar clientes.
+        </p>
+      </div>
+
+      <div class="listas-grid">
+
+        <!-- Canales -->
+        <div class="lista-card">
+          <div class="lista-card-header">
+            <span class="tipo-badge tipo-canales">TV</span>
+            <h4>Canales en Vivo</h4>
+          </div>
+          <div class="lista-add-form">
+            <input type="text" id="lista-nombre-canales" placeholder="Nombre descriptivo (ej: Colombia HD)">
+            <div class="input-row">
+              <input type="text" id="lista-url-canales" placeholder="https://...">
+              <button class="btn btn-primary btn-sm"
+                      onclick="agregarListaForm('canales')">Agregar</button>
+            </div>
+          </div>
+          <div class="lista-items" id="lista-items-canales">
+            <p class="lista-empty">Sin listas guardadas.</p>
+          </div>
+        </div>
+
+        <!-- Películas -->
+        <div class="lista-card">
+          <div class="lista-card-header">
+            <span class="tipo-badge tipo-peliculas">VOD</span>
+            <h4>Películas</h4>
+          </div>
+          <div class="lista-add-form">
+            <input type="text" id="lista-nombre-peliculas" placeholder="Nombre descriptivo (ej: Movies HD)">
+            <div class="input-row">
+              <input type="text" id="lista-url-peliculas" placeholder="https://...">
+              <button class="btn btn-primary btn-sm"
+                      onclick="agregarListaForm('peliculas')">Agregar</button>
+            </div>
+          </div>
+          <div class="lista-items" id="lista-items-peliculas">
+            <p class="lista-empty">Sin listas guardadas.</p>
+          </div>
+        </div>
+
+        <!-- Series -->
+        <div class="lista-card">
+          <div class="lista-card-header">
+            <span class="tipo-badge tipo-series">SERIES</span>
+            <h4>Series</h4>
+          </div>
+          <div class="lista-add-form">
+            <input type="text" id="lista-nombre-series" placeholder="Nombre descriptivo (ej: Series Pack)">
+            <div class="input-row">
+              <input type="text" id="lista-url-series" placeholder="https://...">
+              <button class="btn btn-primary btn-sm"
+                      onclick="agregarListaForm('series')">Agregar</button>
+            </div>
+          </div>
+          <div class="lista-items" id="lista-items-series">
+            <p class="lista-empty">Sin listas guardadas.</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /panel-listas -->
+
+  </div><!-- /main -->
+</div><!-- /dashboard -->
+
+<!-- ═══════════════════════════════ MODAL EDITAR CLIENTE ═════════ -->
+<div class="modal-backdrop" id="editModal"
+     onclick="if(event.target===this) cerrarEdicion()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Editar Cliente</h3>
+      <div class="modal-close" onclick="cerrarEdicion()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </div>
     </div>
 
-    <script type="module" src="app.js"></script>
+    <input type="hidden" id="editId">
+
+    <div class="modal-section">
+      <div class="modal-section-title">DATOS BÁSICOS</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>NOMBRE</label>
+          <input type="text" id="editName" placeholder="Nombre del cliente">
+        </div>
+        <div class="form-group">
+          <label>ROL</label>
+          <select id="editRole">
+            <option value="">— Sin rol —</option>
+            <option value="admin">Admin</option>
+            <option value="user">User</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">SUSCRIPCIÓN</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>ESTADO</label>
+          <select id="editStatus">
+            <option value="active">Activo</option>
+            <option value="expired">Vencido</option>
+            <option value="pending">Pendiente</option>
+            <option value="cancelled">Cancelado</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>PLAN</label>
+          <select id="editPlan">
+            <option value="mensual">Mensual</option>
+            <option value="trimestral">Trimestral</option>
+            <option value="anual">Anual</option>
+            <option value="vip">VIP</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>VENCIMIENTO</label>
+          <input type="datetime-local" id="editExpiry">
+        </div>
+        <div class="form-group">
+          <label>MÁX. CONEXIONES</label>
+          <input type="number" id="editMaxConn" min="1" max="10" placeholder="1">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>SESIÓN ACTIVA</label>
+          <select id="editSession">
+            <option value="true">Habilitada ✓</option>
+            <option value="false">Bloqueada ✗</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>BLOQUEADO EL</label>
+          <input type="text" id="editBlockedAt" readonly placeholder="— sin bloqueo —">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">ENLACES M3U</div>
+      <div class="url-field-group">
+        <label>URL TV EN VIVO</label>
+        <select id="editTvSel"></select>
+        <input type="text" id="editTv" placeholder="O escribe la URL manualmente...">
+      </div>
+      <div class="url-field-group">
+        <label>URL PELÍCULAS</label>
+        <select id="editMovieSel"></select>
+        <input type="text" id="editMovie" placeholder="O escribe la URL manualmente...">
+      </div>
+      <div class="url-field-group">
+        <label>URL SERIES</label>
+        <select id="editSerieSel"></select>
+        <input type="text" id="editSerie" placeholder="O escribe la URL manualmente...">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="cerrarEdicion()">Cancelar</button>
+      <button class="btn btn-primary" id="saveEditBtn" onclick="guardarEdicion()">
+        Guardar Cambios
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ MODAL CREAR CLIENTE ═════════ -->
+<div class="modal-backdrop" id="createModal"
+     onclick="if(event.target===this) cerrarCreacion()">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Nuevo Cliente</h3>
+      <div class="modal-close" onclick="cerrarCreacion()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </div>
+    </div>
+
+    <form id="createForm" onsubmit="return false">
+
+      <!-- Toggle modo -->
+      <div class="modo-toggle">
+        <button type="button" id="modoBtn-nuevo"
+                class="modo-btn active"
+                onclick="cambiarModo('nuevo')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M19 8v6M22 11h-6"/>
+          </svg>
+          Usuario nuevo
+        </button>
+        <button type="button" id="modoBtn-existente"
+                class="modo-btn"
+                onclick="cambiarModo('existente')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5">
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <polyline points="16 11 18 13 22 9"/>
+          </svg>
+          Ya existe en Auth
+        </button>
+      </div>
+
+      <!-- Datos básicos comunes -->
+      <div class="modal-section">
+        <div class="modal-section-title">DATOS BÁSICOS</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>NOMBRE COMPLETO *</label>
+            <input type="text" id="createName" placeholder="Nombre del cliente">
+          </div>
+          <div class="form-group">
+            <label>ROL</label>
+            <select id="createRole">
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección modo NUEVO (email + password) -->
+      <div id="create-section-nuevo" class="modal-section" style="display:flex;flex-direction:column;gap:14px">
+        <div class="modal-section-title">CREDENCIALES — CUENTA NUEVA</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>CORREO ELECTRÓNICO *</label>
+            <input type="email" id="createEmail" placeholder="cliente@correo.com">
+          </div>
+          <div class="form-group">
+            <label>CONTRASEÑA *</label>
+            <input type="password" id="createPassword" placeholder="Mín. 6 caracteres">
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección modo EXISTENTE — email + contraseña para obtener UID -->
+      <div id="create-section-existente" class="modal-section" style="display:none;flex-direction:column;gap:14px">
+        <div class="modal-section-title">CREDENCIALES — CUENTA EXISTENTE</div>
+        <div class="info-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          <span>
+            Ingresa el correo y contraseña del usuario que ya existe en
+            Authentication. El UID se obtiene automáticamente.
+          </span>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>CORREO ELECTRÓNICO *</label>
+            <input type="email" id="existenteEmail" placeholder="cliente@correo.com">
+          </div>
+          <div class="form-group">
+            <label>CONTRASEÑA *</label>
+            <input type="password" id="existentePassword" placeholder="Contraseña actual">
+          </div>
+        </div>
+      </div>
+
+      <!-- Suscripción -->
+      <div class="modal-section">
+        <div class="modal-section-title">SUSCRIPCIÓN</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>ESTADO</label>
+            <select id="createStatus">
+              <option value="active">Activo</option>
+              <option value="pending">Pendiente</option>
+              <option value="expired">Vencido</option>
+              <option value="cancelled">Cancelado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>PLAN</label>
+            <select id="createPlan">
+              <option value="mensual">Mensual</option>
+              <option value="trimestral">Trimestral</option>
+              <option value="anual">Anual</option>
+              <option value="vip">VIP</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>VENCIMIENTO</label>
+            <input type="datetime-local" id="createExpiry">
+          </div>
+          <div class="form-group">
+            <label>MÁX. CONEXIONES</label>
+            <input type="number" id="createMaxConn" min="1" max="10" value="1">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>SESIÓN ACTIVA</label>
+            <select id="createSession">
+              <option value="true">Habilitada ✓</option>
+              <option value="false">Bloqueada ✗</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- URLs M3U -->
+      <div class="modal-section">
+        <div class="modal-section-title">ENLACES M3U</div>
+        <div class="url-field-group">
+          <label>URL TV EN VIVO</label>
+          <select id="createTvSel"></select>
+          <input type="text" id="createTv" placeholder="O escribe la URL manualmente...">
+        </div>
+        <div class="url-field-group">
+          <label>URL PELÍCULAS</label>
+          <select id="createMovieSel"></select>
+          <input type="text" id="createMovie" placeholder="O escribe la URL manualmente...">
+        </div>
+        <div class="url-field-group">
+          <label>URL SERIES</label>
+          <select id="createSerieSel"></select>
+          <input type="text" id="createSerie" placeholder="O escribe la URL manualmente...">
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" onclick="cerrarCreacion()">Cancelar</button>
+        <button type="button" class="btn btn-success" id="saveCreateBtn" onclick="crearCliente()">
+          Guardar Cliente
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ MODAL BORRAR CLIENTE ════════ -->
+<div class="modal-backdrop" id="deleteModal"
+     onclick="if(event.target===this) cerrarBorrado()">
+  <div class="modal-box" style="max-width:460px">
+    <div class="modal-header">
+      <h3>Eliminar Cliente</h3>
+      <div class="modal-close" onclick="cerrarBorrado()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2.5">
+          <path d="M18 6 6 18M6 6l12 12"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Advertencia -->
+    <div class="delete-warning">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+           stroke="var(--red)" stroke-width="2">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/>
+        <line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+      <div class="delete-warning-text">
+        <strong>Esta acción no se puede deshacer</strong>
+        <p>
+          Se eliminará el documento de <strong id="deleteClientName"></strong>
+          de Firestore. Recuerda borrarlo también en
+          <em>Firebase Authentication → Usuarios</em>.
+        </p>
+      </div>
+    </div>
+
+    <!-- Campo de confirmación -->
+    <div>
+      <span class="delete-confirm-label">
+        Escribe <code>myconnect</code> para confirmar el borrado:
+      </span>
+      <input type="text" id="deleteConfirmInput"
+             placeholder="myconnect"
+             oninput="onDeleteInputChange()"
+             autocomplete="off">
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="cerrarBorrado()">Cancelar</button>
+      <button class="btn" id="confirmDeleteBtn"
+              onclick="confirmarBorrado()" disabled>
+        Confirmar borrado
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Script de tabs (no necesita Firebase, va inline) -->
+<script>
+  function switchTab(tab, el) {
+    document.querySelectorAll('.dash-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.dash-panel').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+  }
+</script>
+
+<script type="module" src="js/main.js"></script>
 </body>
 </html>
