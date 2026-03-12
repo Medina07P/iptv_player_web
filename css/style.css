@@ -754,7 +754,6 @@ tbody tr {
     background var(--t-fast) var(--ease),
     box-shadow var(--t-fast) var(--ease);
   cursor: pointer;
-  position: relative;
 }
 
 tbody tr:last-child { border-bottom: none; }
@@ -763,19 +762,6 @@ tbody tr:hover {
   background: rgba(255,255,255,0.025);
 }
 
-/* Línea izquierda de acento en hover */
-tbody tr::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--accent);
-  transform: scaleY(0);
-  transition: transform var(--t-fast) var(--ease);
-  border-radius: 0 var(--r-sm) var(--r-sm) 0;
-}
 
 tbody tr:hover::before { transform: scaleY(1); }
 
